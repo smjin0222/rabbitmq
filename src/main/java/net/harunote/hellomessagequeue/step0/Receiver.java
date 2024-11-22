@@ -1,10 +1,11 @@
-package net.harunote.hellomessagequeue;
+package net.harunote.hellomessagequeue.step0;
 
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
-@Configuration
+@Component
 public class Receiver {
     public void receiveMessage(String message) {
         System.out.println("[#] Received: " + message);
     }
+
 }

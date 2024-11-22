@@ -1,4 +1,4 @@
-package net.harunote.hellomessagequeue.step0;
+package net.harunote.hellomessagequeue.step1;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

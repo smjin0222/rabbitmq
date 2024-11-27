@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api")
 public class WorkQueuController {
+
     private final WorkQueueProducer workQueueProducer;
 
     public WorkQueuController(WorkQueueProducer workQueueProducer) {
@@ -16,7 +17,13 @@ public class WorkQueuController {
 
     @PostMapping("/workqueue")
     public String workQueue(@RequestParam String message, @RequestParam int duration) {
-        workQueueProducer.sendWork(message, duration);
+        workQueueProducer.sendWorkQueue(message, duration);
         return "Work queue sent = " + message + ", (" + duration + ")";
+        /**
+         * curl -X POST "http://localhost:8080/api/workqueue?message=Task1&duration=2000"
+         * curl -X POST "http://localhost:8080/api/workqueue?message=Task2&duration=4000"
+         * curl -X POST "http://localhost:8080/api/workqueue?message=Task3&duration=5000"
+         */
     }
+
 }

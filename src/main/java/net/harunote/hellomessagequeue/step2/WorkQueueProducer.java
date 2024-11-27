@@ -11,9 +11,10 @@ public class WorkQueueProducer {
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    public void sendWork(String message, int duration) {
-        String messages = message + "| " + duration;
-        rabbitTemplate.convertAndSend(RabbitMQConfig.QUEUE_NAME, messages);
-        System.out.println("# sent " + messages + " to " + RabbitMQConfig.QUEUE_NAME);
+    public void sendWorkQueue(String workQueueMessage, int duration) {
+        String message = workQueueMessage + "|" + duration;
+        rabbitTemplate.convertAndSend(RabbitMQConfig.QUEUE_NAME, message);
+        System.out.println("Sent workqueue " + message);
     }
+
 }

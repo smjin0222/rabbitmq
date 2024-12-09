@@ -1,4 +1,4 @@
-package net.harunote.hellomessagequeue.step3;
+package net.harunote.hellomessagequeue.step4;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -20,4 +20,5 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws").setAllowedOriginPatterns("*").withSockJS(); // WebSocket 엔드포인트
     }
+
 }

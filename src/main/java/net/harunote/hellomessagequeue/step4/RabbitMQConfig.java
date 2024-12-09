@@ -10,12 +10,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-    // step3-2 예제 추가
+    // step4 예제 추가
     public static final String FANOUT_EXCHANGE_FOR_NEWS = "newsExchange";
 
     public static final String JAVA_QUEUE = "javaQueue";
     public static final String SPRING_QUEUE = "springQueue";
     public static final String VUE_QUEUE = "vueQueue";
+
     @Bean
     public Queue javaQueue() {
         return new Queue(JAVA_QUEUE, false);

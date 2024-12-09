@@ -19,6 +19,7 @@ public class NewsController {
         System.out.println("[#] newsType: " + newsType);
 
         String newsMessage = newsPublisher.publish(newsType);
+        System.out.println("# newsMessage: " + newsMessage);
 
     }
 }

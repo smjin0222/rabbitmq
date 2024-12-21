@@ -10,7 +10,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @fileName : HelloMessageQueueApplication
  * @since : 12/10/24
  */
-
 @SpringBootApplication
 public class HelloMessageQueueApplication {
 

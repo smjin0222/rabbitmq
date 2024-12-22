@@ -4,11 +4,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * Step 5 Routing model implementing LogCollector (TOPIC_EXCHANGE, DIRECT_EXCHANGE)
+ * Step 6 Routing model implementing LogCollector (TOPIC_EXCHANGE, DIRECT_EXCHANGE)
  *
  * @author : codevillain
  * @fileName : HelloMessageQueueApplication
- * @since : 12/20/24
+ * @since : 12/21/24
  */
 
 @SpringBootApplication

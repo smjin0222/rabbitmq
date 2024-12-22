@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * Step 6 Routing model implementing LogCollector (TOPIC_EXCHANGE, DIRECT_EXCHANGE)
+ * Step 7 Execute retry processing when message processing fails (Dead Letter Queue)
  *
  * @author : codevillain
  * @fileName : HelloMessageQueueApplication

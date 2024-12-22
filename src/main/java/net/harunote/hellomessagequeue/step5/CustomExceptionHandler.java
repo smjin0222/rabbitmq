@@ -18,11 +18,11 @@ public class CustomExceptionHandler {
         String routingKey;
 
         if (e instanceof NullPointerException) {
-            routingKey = "log.error";
+            routingKey = "error";
         } else if (e instanceof IllegalArgumentException) {
-            routingKey = "log.warn";
+            routingKey = "warn";
         } else {
-            routingKey = "log.error";
+            routingKey = "error";
         }
 
         logPublisher.publish(routingKey, "Exception이 발생했음 : " + message);
@@ -30,7 +30,7 @@ public class CustomExceptionHandler {
 
     // 메시지 처리
     public void handleMessage(String message) {
-        String routingKey = "log.info";
+        String routingKey = "info";
         logPublisher.publish(routingKey, "Info Log : "  + message);
     }
 }

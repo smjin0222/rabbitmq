@@ -25,6 +25,6 @@ public class OrderController {
     public ResponseEntity<String> sendMessage(@RequestParam String message) {
 
         orderProducer.sendShpping(message);
-        return ResponseEntity.ok("# Order Completed Message sent: " + message);
+        return ResponseEntity.ok("Order Completed Message sent: " + message);
     }
 }

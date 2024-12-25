@@ -13,16 +13,14 @@ public class MessageConsumer {
     private static final int MAX_RETRIES = 3;
     private int retryCount = 0; // 재시도 횟수 관리
 
+    // RabbitMQManualConfig에서 선언한 containerFactory 설정 추가
     @RabbitListener(queues = RabbitMQConfig.ORDER_COMPLETED_QUEUE, containerFactory = "rabbitListenerContainerFactory")
     public void processMessage(String message, Channel channel, @Header("amqp_deliveryTag") long tag) {
-        System.out.println("[Order Queue Received]: " + message);
-
         try {
             // 실패를 강제로 유발
             if ("fail".equalsIgnoreCase(message)) {
-                System.out.println("### retryCount = " + retryCount);
-
-                if (retryCount < MAX_RETRIES -1) {
+                if (retryCount < MAX_RETRIES) {
+                    System.err.println("# fail & retry = " + retryCount);
                     retryCount++;
                     throw new RuntimeException("- Processing failed. Retry count: " + retryCount);
                 } else {
@@ -32,7 +30,6 @@ public class MessageConsumer {
                     return;
                 }
             }
-
             // 성공 처리
             System.out.println("+ Message processed successfully: " + message);
             channel.basicAck(tag, false); // Ack 전송
@@ -41,7 +38,7 @@ public class MessageConsumer {
         } catch (Exception e) {
             System.err.println("# Error processing message: " + e.getMessage());
             try {
-                // 실패 시 Nack 처리하여 메시지를 다시 처리
+                // 실패 시 basicReject 처리하여 메시지를 다시 처리
                 channel.basicReject(tag, true); // 재처리 가능하도록 Reject
             } catch (IOException ioException) {
                 System.err.println("# Failed to reject message: " + ioException.getMessage());

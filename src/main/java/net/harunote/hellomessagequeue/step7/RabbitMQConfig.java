@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
     public static final String ORDER_COMPLETED_QUEUE = "orderCompletedQueue";
-
     public static final String DLQ = "deadLetterQueue";
     public static final String ORDER_EXCHANGE = "orderExchange";
     public static final String DLX = "deadLetterExchange";
@@ -35,12 +34,10 @@ public class RabbitMQConfig {
     public Queue deadLetterQueue() {
         return new Queue(DLQ);
     }
-
     @Bean
     public Binding orderQueueBinding() {
         return BindingBuilder.bind(orderQueue()).to(orderExchange()).with("order.completed.#");
     }
-
     @Bean
     public Binding deadLetterQueueBinding() {
         return BindingBuilder.bind(deadLetterQueue()).to(deadLetterExchange()).with(DLQ);

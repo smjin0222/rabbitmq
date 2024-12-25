@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 @Component
-public class MessageConsumer {
+public class OrderConsumer {
 
     private static final int MAX_RETRIES = 3;
     private int retryCount = 0; // 재시도 횟수 관리

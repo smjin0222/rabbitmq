@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class OrderDLQConsumer {
+
     private final RabbitTemplate rabbitTemplate;
 
     public OrderDLQConsumer(RabbitTemplate rabbitTemplate) {
@@ -13,31 +14,20 @@ public class OrderDLQConsumer {
     }
 
     @RabbitListener(queues = RabbitMQConfig.DLQ)
-    public void processDeadLetter(String message) {
-        System.out.println("[DLQ Received]: " + message);
-        try {
-            // 메시지 수정
-            String fixedMessage = fixMessage(message);
+    public void process(String message) {
+        System.out.println("DLQ Message Received: " + message);
 
-            // 수정된 메시지 재전송
+        try {
+            String fixMessage = "success";
+
             rabbitTemplate.convertAndSend(
                     RabbitMQConfig.ORDER_EXCHANGE,
                     "order.completed.shipping",
-                    fixedMessage
+                    fixMessage
             );
-            System.out.println("[DLQ] Message requeued with fixed content: " + fixedMessage);
-
+            System.out.println("DLQ Message Sent: " + fixMessage);
         } catch (Exception e) {
-            System.err.println("[DLQ] Failed to reprocess message: " + e.getMessage());
+            System.err.println("### [DLQ Consumer Error] " + e.getMessage());
         }
-    }
-
-    private String fixMessage(String message) {
-        // 메시지가 fail인 경우 success로 변경
-        if ("fail".equalsIgnoreCase(message)) {
-            System.out.println("[DLQ] Fixing message: " + message);
-            return "success";
-        }
-        return message; // 다른 메시지는 그대로 반환
     }
 }

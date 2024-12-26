@@ -9,39 +9,36 @@ import java.io.IOException;
 
 @Component
 public class OrderConsumer {
+    private static final int MAX_RETRIES = 3; // 총 시도 제한 수
+    private int retryCount = 0; // 재시도 횟수
 
-    private static final int MAX_RETRIES = 3;
-    private int retryCount = 0; // 재시도 횟수 관리
-
-    // RabbitMQManualConfig에서 선언한 containerFactory 설정 추가
     @RabbitListener(queues = RabbitMQConfig.ORDER_COMPLETED_QUEUE, containerFactory = "rabbitListenerContainerFactory")
-    public void processMessage(String message, Channel channel, @Header("amqp_deliveryTag") long tag) {
+    public void processOrder(String message, Channel channel, @Header("amqp_deliveryTag") long tag) {
         try {
-            // 실패를 강제로 유발
+            // 실패 유발
             if ("fail".equalsIgnoreCase(message)) {
                 if (retryCount < MAX_RETRIES) {
-                    System.err.println("# fail & retry = " + retryCount);
+                    System.err.println("#### Fail  & Retry = " + retryCount);
                     retryCount++;
-                    throw new RuntimeException("- Processing failed. Retry count: " + retryCount);
+                    throw new RuntimeException(message);
                 } else {
-                    System.err.println("# Max retries reached. Moving to DLQ.");
-                    retryCount = 0; // 재시도 기록 초기화
-                    channel.basicNack(tag, false, false); // DLQ로 메시지 이동
+                    System.err.println("#### 최대 횟수 초과, DLQ 이동 시킴 ");
+                    retryCount = 0;
+                    channel.basicNack(tag, false, false);
                     return;
                 }
             }
             // 성공 처리
-            System.out.println("+ Message processed successfully: " + message);
-            channel.basicAck(tag, false); // Ack 전송
-            retryCount = 0; // 성공 시 재시도 기록 초기화
-
+            System.out.println("# 성공 : " + message);
+            channel.basicAck(tag, false);
+            retryCount = 0;
         } catch (Exception e) {
-            System.err.println("# Error processing message: " + e.getMessage());
+            System.err.println("# error 발생 : " + e.getMessage());
             try {
-                // 실패 시 basicReject 처리하여 메시지를 다시 처리
-                channel.basicReject(tag, true); // 재처리 가능하도록 Reject
-            } catch (IOException ioException) {
-                System.err.println("# Failed to reject message: " + ioException.getMessage());
+                // 실패 시 basicReject 재처리 전송
+                channel.basicReject(tag, true);
+            } catch (IOException e1) {
+                System.err.println("# fail & reject message : " + e1.getMessage());
             }
         }
     }

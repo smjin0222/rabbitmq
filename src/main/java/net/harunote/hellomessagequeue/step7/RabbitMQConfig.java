@@ -6,9 +6,9 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitMQConfig {
-    public static final String ORDER_COMPLETED_QUEUE = "orderCompletedQueue";
+    public static final String ORDER_COMPLETED_QUEUE = "order_completed_queue";
+    public static final String ORDER_EXCHANGE = "order_completed_exchange";
     public static final String DLQ = "deadLetterQueue";
-    public static final String ORDER_EXCHANGE = "orderExchange";
     public static final String DLX = "deadLetterExchange";
 
     @Bean
@@ -21,11 +21,12 @@ public class RabbitMQConfig {
         return new TopicExchange(DLX);
     }
 
+    // 메시지가 처리되지 못했을 경우 자동으로 Deadletterqueue 이동시킴
     @Bean
     public Queue orderQueue() {
         return QueueBuilder.durable(ORDER_COMPLETED_QUEUE)
                 .withArgument("x-dead-letter-exchange", DLX) // Dead Letter Exchange 설정
-                .withArgument("x-dead-letter-routing-key", DLQ) // Dead Letter로 이동할 라우팅 키
+                .withArgument("x-dead-letter-routing-key", DLQ)
                 .ttl(5000)
                 .build();
     }
@@ -34,12 +35,15 @@ public class RabbitMQConfig {
     public Queue deadLetterQueue() {
         return new Queue(DLQ);
     }
+
     @Bean
-    public Binding orderQueueBinding() {
+    public Binding orderCompletedBinding() {
         return BindingBuilder.bind(orderQueue()).to(orderExchange()).with("order.completed.#");
     }
+
     @Bean
-    public Binding deadLetterQueueBinding() {
+    public Binding deadLetterBinding() {
         return BindingBuilder.bind(deadLetterQueue()).to(deadLetterExchange()).with(DLQ);
     }
+
 }

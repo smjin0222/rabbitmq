@@ -16,11 +16,12 @@ public class RabbitMQManualConfig {
 
     @Bean
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(ConnectionFactory connectionFactory) {
-        // RabbitMQ 리스너 컨테이너를 생성하는 팩토리 클래스
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
-        // 수동 Ack 모드 설정, 개발자는 메시지 처리 로직에서 명시적으로 메시지를 확인하거나 거부 처리 가능
+        // 수정 모드 설정이 들어가야 한다.
         factory.setAcknowledgeMode(AcknowledgeMode.MANUAL);
         return factory;
     }
+
+
 }

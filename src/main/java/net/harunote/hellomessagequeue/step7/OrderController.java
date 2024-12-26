@@ -13,17 +13,9 @@ public class OrderController {
         this.orderProducer = orderProducer;
     }
 
-    /**
-     * curl -X POST "http://localhost:8080/api/order" \
-     *      -H "Content-Type: application/json" \
-     *      -d '{"message":"fail"}'
-     * @param message
-     * @return
-     */
 
     @GetMapping
     public ResponseEntity<String> sendOrderMessage(@RequestParam String message) {
-
         orderProducer.sendShpping(message);
         return ResponseEntity.ok("Order Completed Message sent: " + message);
     }

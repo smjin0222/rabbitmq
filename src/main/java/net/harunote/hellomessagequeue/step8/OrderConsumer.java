@@ -15,7 +15,6 @@ public class OrderConsumer {
 
     @RabbitListener(queues = RabbitMQConfig.TOPIC_QUEUE)
     public void processMessage(String message) {
-
         System.out.println("Received message: "+ message + "count : " + retryCount++);
         if ("fail".equals(message)) {
             throw new RuntimeException("- Processing failed. Retry" );

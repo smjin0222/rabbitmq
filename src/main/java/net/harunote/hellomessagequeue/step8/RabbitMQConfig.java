@@ -7,33 +7,33 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-    public static final String TOPIC_EXCHANGE = "order.topic.exchange";
-    public static final String TOPIC_QUEUE = "order.completed.queue";
-    public static final String TOPIC_DLQ = "order.topic.dlq";
-    public static final String TOPIC_DLX = "order.topic.dlx";
-    public static final String DEAD_LETTER_ROUTING_KEY = "dlx.#";
-
+    public static final String ORDER_COMPLETED_QUEUE = "orderCompletedQueue";
+    public static final String DLQ = "deadLetterQueue";
+    public static final String ORDER_TOPIC_EXCHANGE = "orderExchange";
+    public static final String ORDER_TOPIC_DLX = "deadLetterExchange";
+    public static final String DEAD_LETTER_ROUTING_KEY = "dead.letter";
     @Bean
+
     public TopicExchange exchange() {
-        return new TopicExchange(TOPIC_EXCHANGE);
+        return new TopicExchange(ORDER_TOPIC_EXCHANGE);
     }
 
     @Bean
     public TopicExchange deadLetterExchange() {
-        return new TopicExchange(TOPIC_DLX);
+        return new TopicExchange(ORDER_TOPIC_DLX);
     }
 
     @Bean
     public Queue queue() {
-        return QueueBuilder.durable(TOPIC_QUEUE)
-                .withArgument("x-dead-letter-exchange", TOPIC_DLX)
+        return QueueBuilder.durable(ORDER_COMPLETED_QUEUE)
+                .withArgument("x-dead-letter-exchange", ORDER_TOPIC_DLX)
                 .withArgument("x-dead-letter-routing-key", DEAD_LETTER_ROUTING_KEY)
                 .build();
     }
 
     @Bean
     public Queue deadLetterQueue() {
-        return new Queue(TOPIC_DLQ);
+        return new Queue(DLQ);
     }
 
     @Bean

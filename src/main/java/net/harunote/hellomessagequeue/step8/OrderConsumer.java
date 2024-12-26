@@ -17,18 +17,16 @@ public class OrderConsumer {
     }
 
     @RabbitListener(queues = RabbitMQConfig.ORDER_COMPLETED_QUEUE)
-    public void processMessage(String message) {
+    public void consume(String message) {
         retryTemplate.execute(context -> {
             try {
-                System.out.println("# Received message: " + message + ", Retry Count: " + context.getRetryCount());
+                System.out.println("# 리시브 메시지 : " + message + " # retry : " + context.getRetryCount());
                 // 실패 조건
                 if ("fail".equalsIgnoreCase(message)) {
                     throw new RuntimeException(message);
                 }
-                // 성공 처리
-                System.out.println("메시지 처리 성공 : " + message);
+                System.out.println("# 메시지 처리 성공 " + message);
             } catch (Exception e) {
-                System.out.println("###### " + e.getMessage());
                 if (context.getRetryCount() >= 2) {
                     rabbitTemplate.convertAndSend(RabbitMQConfig.ORDER_TOPIC_DLX,
                             RabbitMQConfig.DEAD_LETTER_ROUTING_KEY, message);

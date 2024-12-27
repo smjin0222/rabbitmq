@@ -38,6 +38,7 @@ public class RabbitMQConfig {
 
     @Bean
     public Binding binding() {
+
         return BindingBuilder.bind(queue()).to(exchange()).with("order.completed.*");
     }
 

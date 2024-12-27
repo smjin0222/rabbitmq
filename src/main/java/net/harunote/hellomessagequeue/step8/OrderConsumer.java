@@ -15,5 +15,6 @@ public class OrderConsumer {
             throw new RuntimeException("- Processing failed. Retry" );
         }
         System.out.println("Message processed successfully: " + message);
+        retryCount = 0;
     }
 }

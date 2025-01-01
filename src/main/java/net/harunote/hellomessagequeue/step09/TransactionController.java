@@ -1,32 +1,38 @@
 package net.harunote.hellomessagequeue.step09;
 
+
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+
 
 @RestController
 @RequestMapping("/api/message")
 public class TransactionController {
 
-    private final TransactionalProducer transactionalProducer;
+    private MessageProducer messageProducer;
 
-    public TransactionController(TransactionalProducer transactionalProducer) {
-        this.transactionalProducer = transactionalProducer;
+    public TransactionController(MessageProducer messageProducer) {
+        this.messageProducer = messageProducer;
     }
 
-    /**
-     curl -X POST "http://localhost:8080/api/message" \
-     -H "Content-Type: application/json" \
-     -d '\"success\"'
-     * @param message
-     * @return
-     */
-    @PostMapping
-    public ResponseEntity<String> sendMessage(@RequestBody String message) {
+    @PostMapping("/success")
+    public ResponseEntity<String> successTransaction(@RequestBody String message) {
+        messageProducer.sendMessage(message, false);
+        return ResponseEntity.ok("Transaction processed successfully");
+    }
+
+    @PostMapping("/fail")
+    public ResponseEntity<String> failTransaction(@RequestBody String message) {
         try {
-            transactionalProducer.sendTransactionalMessage(message);
-            return ResponseEntity.ok("Message sent: " + message);
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Message failed: " + e.getMessage());
+            messageProducer.sendMessage(message, true);
+            return ResponseEntity.ok("Transaction should have failed");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Transaction failed as expected: " + e.getMessage());
         }
     }
 }

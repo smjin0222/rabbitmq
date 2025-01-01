@@ -4,7 +4,6 @@ spring:
     port: 5672
     username: guestuser
     password: guestuser
-    publisher-confirm-type: correlated # Publisher Confirms 활성화
   application:
     name: HelloMessageQueue
 server:

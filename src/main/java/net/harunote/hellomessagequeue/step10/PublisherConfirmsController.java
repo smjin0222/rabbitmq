@@ -1,12 +1,10 @@
 package net.harunote.hellomessagequeue.step10;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-@RestController("/api/message")
+@RestController
+@RequestMapping("/api/message") // 올바르게 설정
 public class PublisherConfirmsController {
 
     private final PublisherConfirmsProducer producer;
@@ -17,7 +15,11 @@ public class PublisherConfirmsController {
 
     @PostMapping
     public ResponseEntity<String> sendMessage(@RequestBody String message) {
-        producer.sendMessage(message);
-        return ResponseEntity.ok("Message sent: " + message);
+        try {
+            producer.sendMessage(message);
+            return ResponseEntity.ok("Message sent: " + message);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error sending message: " + e.getMessage());
+        }
     }
 }

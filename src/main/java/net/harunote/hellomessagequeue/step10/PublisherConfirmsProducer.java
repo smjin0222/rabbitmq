@@ -25,7 +25,7 @@ public class PublisherConfirmsProducer {
     public void sendMessage(String message) {
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.EXCHANGE_NAME,
-                "publisher.key",
+                "transaction.key",
                 message
         );
         System.out.println("Message sent: " + message);

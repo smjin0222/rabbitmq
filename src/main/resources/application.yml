@@ -4,6 +4,9 @@ spring:
     port: 5672
     username: guestuser
     password: guestuser
+    publisher-confirm-type: correlated # Enable Publisher Confirms
+    template:
+      mandatory: true # Enable mandatory flag for return callback
   application:
     name: HelloMessageQueue
 server:

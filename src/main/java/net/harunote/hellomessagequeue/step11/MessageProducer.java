@@ -13,6 +13,7 @@ public class MessageProducer {
     }
 
     public void sendMessage(String exchange, String routingKey, String message) {
+
         rabbitTemplate.convertAndSend(exchange, routingKey, message);
         System.out.println("Message sent to exchange [" + exchange + "] with routing key [" + routingKey + "]: " + message);
     }

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/messages")
 public class MessageController {
 
+    // MessageProducer.sendMessage 를 통해서 호출해도 무방
     private final RabbitTemplate rabbitTemplate;
 
     public MessageController(RabbitTemplate rabbitTemplate) {
@@ -17,6 +18,7 @@ public class MessageController {
     @PostMapping
     public ResponseEntity<String> sendMessage(@RequestBody String message) {
         try {
+            //
             rabbitTemplate.convertAndSend(
                     RabbitMQConfig.ORDER_TOPIC_EXCHANGE,
                     "order.completed",

@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/HelloMessageQueue.iml" filepath="$PROJECT_DIR$/HelloMessageQueue.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/HelloMessageQueue.main.iml" filepath="$PROJECT_DIR$/.idea/modules/HelloMessageQueue.main.iml" />
     </modules>
   </component>
 </project>

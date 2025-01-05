@@ -1,64 +1,94 @@
 package net.harunote.hellomessagequeue.step10;
 
+import org.springframework.amqp.core.*;
 
-import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
-import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 
 @Configuration
 public class RabbitMQConfig {
+    public static final String QUEUE_NAME = "transactionQueue";
+    public static final String EXCHANGE_NAME = "transactionExchange";
+    public static final String ROUTING_KEY = "transactionRoutingKey";
 
+    // Queue 설정
     @Bean
-    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(ConnectionFactory connectionFactory) {
-        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
-        factory.setConnectionFactory(connectionFactory);
-        factory.setDefaultRequeueRejected(false); // Prevent requeuing on exception
-        return factory;
+    public Queue transactionQueue() {
+        return QueueBuilder.durable(QUEUE_NAME)
+                .withArgument("x-dead-letter-exchange", "") // Dead Letter Exchange
+                .withArgument("x-dead-letter-routing-key", "deadLetterQueue") // Dead Letter Routing Key
+                .build();
     }
 
+    // Dead Letter Queue 설정
     @Bean
-    public RabbitTemplate rabbitTemplate(CachingConnectionFactory connectionFactory) {
+    public Queue deadLetterQueue() {
+        return new Queue("deadLetterQueue");
+    }
+
+    // Exchange 설정
+    @Bean
+    public DirectExchange transactionExchange() {
+        return new DirectExchange(EXCHANGE_NAME);
+    }
+
+    // Binding 설정
+    @Bean
+    public Binding transactionBinding(Queue transactionQueue, DirectExchange transactionExchange) {
+        return BindingBuilder.bind(transactionQueue).to(transactionExchange).with(ROUTING_KEY);
+    }
+
+    // 메시지 변환기 설정
+    @Bean
+    public MessageConverter messageConverter() {
+        return new Jackson2JsonMessageConverter();
+    }
+
+    // RabbitTemplate 설정
+    @Bean
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-        rabbitTemplate.setMandatory(true);
-        rabbitTemplate.setConfirmCallback((correlation, ack, reason) -> {
+        rabbitTemplate.setMessageConverter(messageConverter()); // JSON 변환기 등록
+        rabbitTemplate.setMandatory(true); // ReturnsCallback 활성화
+
+        // ConfirmCallback 설정
+        rabbitTemplate.setConfirmCallback((correlationData, ack, cause) -> {
             if (ack) {
-                System.out.println("Message confirmed: " +
-                        (correlation != null ? correlation.getId() : "null"));
+                System.out.println("[Message confirmed]: " +
+                        (correlationData != null ? correlationData.getId() : "null"));
             } else {
-                System.out.println("Message not confirmed: " +
-                        (correlation != null ? correlation.getId() : "null") + ", Reason: " + reason);
-                // 여기에 예외 처리 혹은 재처리 로직을 호출
-                handleFailedMessage(correlation, reason);
+                System.out.println("[Message not confirmed]: " +
+                        (correlationData != null ? correlationData.getId() : "null") + ", Reason: " + cause);
+
+                // 실패 메시지에 대한 추가 처리 로직 (예: 로그 기록, DB 적재, 관리자 알림 등)
             }
         });
 
-        // ReturnCallback 설정
-        rabbitTemplate.setReturnsCallback(returnedMessage -> {
-            System.out.println("Returned message: " + new String(returnedMessage.getMessage().getBody()));
-            System.out.println("Exchange: " + returnedMessage.getExchange());
-            System.out.println("Routing Key: " + returnedMessage.getRoutingKey());
+        // ReturnsCallback 설정
+        rabbitTemplate.setReturnsCallback(returned -> {
+            System.out.println("Returned message: " + new String(returned.getMessage().getBody()));
+            System.out.println("Exchange: " + returned.getExchange());
+            System.out.println("Routing Key: " + returned.getRoutingKey());
         });
-
 
         return rabbitTemplate;
     }
 
-    private void handleFailedMessage(CorrelationData correlationData, String reason) {
-        System.err.println("Handling failed message. CorrelationId: " +
-                (correlationData != null ? correlationData.getId() : "null") + ", Reason: " + reason);
 
-        // 필요한 경우 예외를 던져 Exception 블록에서 처리
-
-    }
-
+    // RabbitListener 설정
     @Bean
-    public Queue myQueue() {
-        return new Queue("myQueue", false); // Non-durable queue
+    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(ConnectionFactory connectionFactory) {
+        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+        factory.setConnectionFactory(connectionFactory);
+        factory.setMessageConverter(messageConverter());
+        factory.setAcknowledgeMode(AcknowledgeMode.MANUAL); // 수동 Ack 모드
+        return factory;
     }
 }

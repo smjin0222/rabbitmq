@@ -12,9 +12,9 @@ public class MessageController {
         this.producer = producer;
     }
 
-    @GetMapping
-    public String publishMessage(@RequestParam String message) {
-        producer.sendMessage(message);
+    @PostMapping
+    public String publishMessage(@RequestBody StockEntity stockEntity, @RequestParam boolean testCase) {
+        producer.sendMessage(stockEntity, testCase);
         return "Message sent to RabbitMQ";
     }
 }

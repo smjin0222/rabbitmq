@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 public class MessageProducer {
-
     private final RabbitTemplate rabbitTemplate;
     private final StockRepository stockRepository;
 
@@ -19,41 +18,40 @@ public class MessageProducer {
         this.stockRepository = stockRepository;
     }
 
+
     @Transactional
     public void sendMessage(StockEntity stockEntity, boolean testCase) {
         stockEntity.setProcessed(false);
         stockEntity.setCreatedAt(LocalDateTime.now());
+        StockEntity entity = stockRepository.save(stockEntity);
 
-        // 1. DB 저장
-        StockEntity savedStock = stockRepository.save(stockEntity);
-        System.out.println("# Stock saved: " + savedStock);
+        System.out.println("[producer entity] : " + entity);
 
         if (stockEntity.getUserId() == null || stockEntity.getUserId().isEmpty()) {
-            throw new IllegalArgumentException("Invalid StockEntity: userId is required");
+            throw new RuntimeException("User id is required");
         }
 
-
         try {
-            // 2. 메시지 RabbitMQ에 전송
-            CorrelationData correlationData = new CorrelationData(savedStock.getId().toString());
+            // 메시지를 rabbitmq 에 전송
+            CorrelationData correlationData = new CorrelationData(entity.getId().toString());
             rabbitTemplate.convertAndSend(
                     testCase ? "nonExistentExchange" : RabbitMQConfig.EXCHANGE_NAME,
                     testCase ? "invalidRoutingKey" : RabbitMQConfig.ROUTING_KEY,
-                    savedStock,
+                    entity,
                     correlationData
             );
 
-            // 3. Publisher Confirms 확인
             if (correlationData.getFuture().get(5, TimeUnit.SECONDS).isAck()) {
-                System.out.println("# Message confirmed: " + savedStock);
-                savedStock.setProcessed(true);
-                stockRepository.save(savedStock);
+                System.out.println("[producer correlationData] 성공" + entity);
+                entity.setProcessed(true);
+                stockRepository.save(entity);
             } else {
-                throw new RuntimeException("# Message not confirmed");
+                throw new RuntimeException("# confirm 실패 - 롤백");
             }
+
         } catch (Exception e) {
-            System.out.println("# Producer failed: " + e.getMessage());
-            throw new RuntimeException("# Transaction rolled back", e);
+            System.out.println("[producer exception fail] : " + e);
+            throw new RuntimeException(e);
         }
     }
 }

@@ -6,7 +6,10 @@ import org.springframework.amqp.support.AmqpHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.io.OptionalDataException;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Component
 public class MessageConsumer {
@@ -21,24 +24,27 @@ public class MessageConsumer {
                                @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag,
                                Channel channel) {
         try {
-            System.out.println("[Consumer] Received message: " + stock);
+            System.out.println("[Consumer] " + stock);
+            Thread.sleep(200);
+            Optional<StockEntity> optionalStock = stockRepository.findById(stock.getId());
+            if (optionalStock.isPresent()) {
+                StockEntity stockEntity = optionalStock.get();
+                stockEntity.setUpdatedAt(LocalDateTime.now());
+                stockRepository.save(stockEntity); // 업데이트
+                System.out.println("[Save Entity Consumer] " + stockEntity);
+            } else {
+                throw new RuntimeException("Stock not found");
+            }
 
-            // 비즈니스 로직 처리
-            stock.setProcessed(true);
-            stock.setUpdatedAt(LocalDateTime.now());
-            StockEntity updatedStock = stockRepository.save(stock);
-            System.out.println("[Consumer] Stock processed and updated: " + updatedStock);
-
-            // 메시지 처리 완료 후 Ack 전송
-            channel.basicAck(deliveryTag, false); // Single message Ack
+            channel.basicAck(deliveryTag, false);
         } catch (Exception e) {
-            System.out.println("[Consumer] Error processing message: " + e.getMessage());
-
+            System.out.println("[Consumer Error] " + e.getMessage());
             try {
-                // 메시지 처리 실패 시 Nack 전송 (재처리 또는 DLQ로 이동)
-                channel.basicNack(deliveryTag, false, false); // Don't requeue
-            } catch (Exception nackException) {
-                System.out.println("[Consumer] Error sending Nack: " + nackException.getMessage());
+                channel.basicNack(deliveryTag, false, false);
+
+            } catch (IOException ex) {
+                System.out.println("[Consumer send nack] " + ex.getMessage());
+                //throw new RuntimeException(ex);
             }
         }
     }

@@ -49,38 +49,39 @@ public class RabbitMQConfig {
         return new Jackson2JsonMessageConverter();
     }
 
-    // RabbitTemplate 설정
+    // TODO RabbitTemplate 설정, ReturnsCallback 활성화 등록, ConfirmCallback 설정
     @Bean
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-        rabbitTemplate.setMessageConverter(messageConverter()); // JSON 변환기 등록
-        rabbitTemplate.setMandatory(true); // ReturnsCallback 활성화
+        rabbitTemplate.setMessageConverter(messageConverter()); // JSON 변환기
+        rabbitTemplate.setMandatory(true);  // ReturnCallback 활성화
 
-        // ConfirmCallback 설정
+        // confirmCallBack 설정
         rabbitTemplate.setConfirmCallback((correlationData, ack, cause) -> {
             if (ack) {
-                System.out.println("[Message confirmed]: " +
+                System.out.println("#### [Message confirmed]: " +
                         (correlationData != null ? correlationData.getId() : "null"));
             } else {
-                System.out.println("[Message not confirmed]: " +
+                System.out.println("#### [Message not confirmed]: " +
                         (correlationData != null ? correlationData.getId() : "null") + ", Reason: " + cause);
 
                 // 실패 메시지에 대한 추가 처리 로직 (예: 로그 기록, DB 적재, 관리자 알림 등)
             }
         });
 
-        // ReturnsCallback 설정
+        // ReturnCallback 설정
         rabbitTemplate.setReturnsCallback(returned -> {
-            System.out.println("Returned message: " + new String(returned.getMessage().getBody()));
-            System.out.println("Exchange: " + returned.getExchange());
-            System.out.println("Routing Key: " + returned.getRoutingKey());
-        });
+            System.out.println("Return Message: " + returned.getMessage().getBody());
+            System.out.println("Exchange : " + returned.getExchange());
+            System.out.println("RoutingKey : " + returned.getRoutingKey());
 
+            // 데드레터 설정 추가
+        });
         return rabbitTemplate;
     }
 
 
-    // RabbitListener 설정
+    // TODO RabbitListener 설정, 수동 Ack 모드 설정
     @Bean
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(ConnectionFactory connectionFactory) {
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
@@ -89,4 +90,5 @@ public class RabbitMQConfig {
         factory.setAcknowledgeMode(AcknowledgeMode.MANUAL); // 수동 Ack 모드
         return factory;
     }
+
 }

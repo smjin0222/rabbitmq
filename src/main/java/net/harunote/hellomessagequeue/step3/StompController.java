@@ -1,5 +1,6 @@
 package net.harunote.hellomessagequeue.step3;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
@@ -8,9 +9,11 @@ import org.springframework.stereotype.Controller;
 public class StompController {
 
     private final SimpMessagingTemplate messagingTemplate;
+    private final NotificationPublisher publisher;
 
-    public StompController(SimpMessagingTemplate messagingTemplate) {
+    public StompController(SimpMessagingTemplate messagingTemplate, NotificationPublisher publisher) {
         this.messagingTemplate = messagingTemplate;
+        this.publisher = publisher;
     }
 
     @MessageMapping("/send")
@@ -20,6 +23,8 @@ public class StompController {
 
         System.out.println("[#] message = " + message);
         // 클라이언트에 메시지 브로드캐스트
-        messagingTemplate.convertAndSend("/topic/notifications", message);
+        // messagingTemplate.convertAndSend("/topic/notifications", message);
+
+        publisher.publish(message);
     }
 }

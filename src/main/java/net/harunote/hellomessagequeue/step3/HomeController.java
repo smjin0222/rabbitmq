@@ -12,4 +12,9 @@ public class HomeController {
         model.addAttribute("message", "Welcome to RabbitMQ Sample!");
         return "home"; // src/main/resources/templates/home.html 파일을 찾음
     }
+
+    @GetMapping("/index")
+    public String index() {
+        return "index"; // src/main/resources/templates/home.html 파일을 찾음
+    }
 }

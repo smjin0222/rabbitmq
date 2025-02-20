@@ -22,7 +22,7 @@
     stompClient.connect({}, function () {
         console.log('Connected to WebSocket');
         // 서버로 부터 메시지 구독
-        stompClient.subscribe('' +
+        stompClient.subscribe('/topic/notifications' +
             '', function (message) {
             const notificationsDiv = document.getElementById('notifications');
             const newNotification = document.createElement('div');
